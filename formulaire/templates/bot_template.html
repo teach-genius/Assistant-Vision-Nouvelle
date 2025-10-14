@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Nouvelle</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            user-select: none;
+            overflow-x: hidden;
+            background-color: #f5faff;
+        }
+
+        /* -------- HEADER -------- */
+        .header {
+            display: flex;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            z-index: 999;
+            top: 0;
+            height: 90px;
+            background: linear-gradient(90deg, #3F8CFF 0%, #2DCC14 100%);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            padding: 0 16px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* -------- BACKGROUND -------- */
+        .background-logo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .background-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+        }
+
+        /* -------- MESSAGES -------- */
+        .messages-container {
+            position: fixed;
+            top: 90px;
+            bottom: 100px;
+            left: 0;
+            width: 100%;
+            overflow-y: auto;
+            padding: 10px;
+            z-index: 2;
+        }
+        .message-bot,
+        .message-user {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+            animation: fadeIn 0.3s ease;
+        }
+        .message-bot .text {
+            background-color: rgb(255, 255, 255);
+            color: #222;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            padding: 12px 14px;
+            border-radius: 10px;
+            max-width: 85%;
+        }
+        .message-user {
+            justify-content: flex-end;
+        }
+        .message-user .text {
+            background-color: #3F8CFF;
+            color: white;
+            padding: 12px 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            max-width: 75%;
+        }
+
+        .bot-avatar {
+            height: 36px;
+            width: 36px;
+            background-color: #D7D014;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .bot-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* -------- FOOTER / INPUT -------- */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            padding: 12px;
+            z-index: 5;
+        }
+        .suggestions {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+        .suggestion-btn {
+            flex: 0 0 auto;
+            background: linear-gradient(90deg, #2DCC14, #3F8CFF);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+        }
+        .suggestion-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .input-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid #3F8CFF;
+            border-radius: 12px;
+            background-color: #f9f9f9;
+            padding: 4px 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            padding: 10px;
+            outline: none;
+        }
+
+        button.send-btn {
+            border: none;
+            background-color: #3F8CFF;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button.send-btn:hover {
+            background-color: #2DCC14;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-45TSTEH491"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-45TSTEH491');
+</script>
+<body>
+    <!-- BACKGROUND -->
+    <div class="background-logo">
+        <img src="{% static 'imgs/logo_b.jpg' %}" alt="Logo Vision Nouvelle">
+    </div>
+    <!-- HEADER -->
+    <header class="header">
+        <div style="display: flex; align-items: center; gap: 10px; width: 100%; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="overflow: hidden; border-radius: 50%; height: 50px; width: 50px;">
+                    <img src="{% static 'imgs/bot.svg' %}" alt="bot" style="object-fit: cover; width:100%; height:100%;">
+                </div>
+                <div>
+                    <p style="color: #fff; font-weight: bold;">Vision Nouvelle</p>
+                    <p style="color: #D7D014;">Assistant</p>
+                </div>
+            </div>
+            <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 12px;">
+                <img src="{% static 'imgs/logo_b.jpg' %}" style="object-fit: cover; width:100%; height:100%;">
+            </div>
+        </div>
+    </header>
+    <!-- CHAT CONTAINER -->
+    <main class="messages-container" id="chat-box">
+        <div class="message-bot">
+            <div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div>
+            <div class="text">Bonjour 👋, je suis l’assistant Vision Nouvelle. Comment puis-je vous aider aujourd’hui ?</div>
+        </div>
+    </main>
+    <!-- FOOTER / NAV -->
+    <nav class="nav">
+        <div class="suggestions">
+            <button class="suggestion-btn">Pourquoi vous présentez-vous ?</button>
+            <button class="suggestion-btn">Qu’aimeriez-vous changer ou améliorer ?</button>
+            <button class="suggestion-btn">Quelle place pour les jeunes / nouveaux membres ?</button>
+            <button class="suggestion-btn">Quelles sont les valeurs qui vous tiennent à cœur ?</button>
+        </div>
+        <div class="input-bar">
+            <input type="text" id="user-input" placeholder="Écrire un message...">
+            <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </nav>
+
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const suggestions = document.querySelectorAll(".suggestion-btn");
+
+        let history = [];
+
+        function addMessage(text, sender = "user") {
+            const div = document.createElement("div");
+            div.className = sender === "user" ? "message-user" : "message-bot";
+            div.innerHTML = sender === "bot"
+                ? `<div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div><div class="text">${text}</div>`
+                : `<div class="text">${text}</div>`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage(msg) {
+            if (!msg.trim()) return;
+
+            addMessage(msg, "user");
+            userInput.value = "";
+
+            history.push({ role: "user", content: msg });
+
+            // simulation du "..." pendant la réponse
+            const thinking = document.createElement("div");
+            thinking.className = "message-bot";
+            thinking.innerHTML = `<div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div><div class="text">...</div>`;
+            chatBox.appendChild(thinking);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                
+                const response = await fetch("/api/chat/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: msg,
+                        history: history
+                    })
+                });
+
+                const data = await response.json();
+                const botText = data.reply || "Désolé, une erreur est survenue.";
+
+                thinking.remove();
+                addMessage(botText, "bot");
+                history.push({ role: "assistant", content: botText });
+
+            } catch (e) {
+                thinking.remove();
+                addMessage("⚠️ Erreur de communication avec le serveur.", "bot");
+            }
+        }
+
+        sendBtn.addEventListener("click", () => sendMessage(userInput.value));
+        userInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(userInput.value); });
+        suggestions.forEach(btn => btn.addEventListener("click", () => sendMessage(btn.textContent)));
+    </script>
+</body>
+</html>
