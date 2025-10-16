@@ -14,7 +14,6 @@
         ::-webkit-scrollbar {
             display: none;
         }
-
         * {
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -23,14 +22,11 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
-
         body {
             user-select: none;
             overflow-x: hidden;
             background-color: #f5faff;
         }
-
-        /* -------- HEADER -------- */
         .header {
             display: flex;
             align-items: center;
@@ -45,8 +41,6 @@
             padding: 0 16px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
         }
-
-        /* -------- BACKGROUND -------- */
         .background-logo {
             position: fixed;
             top: 0;
@@ -56,15 +50,12 @@
             z-index: 0;
             overflow: hidden;
         }
-
         .background-logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             opacity: 0.5;
         }
-
-        /* -------- MESSAGES -------- */
         .messages-container {
             position: fixed;
             top: 90px;
@@ -102,7 +93,6 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
             max-width: 75%;
         }
-
         .bot-avatar {
             height: 36px;
             width: 36px;
@@ -112,13 +102,11 @@
             flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-
         .bot-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        /* -------- FOOTER / INPUT -------- */
         .nav {
             position: fixed;
             bottom: 0;
@@ -163,7 +151,6 @@
             background-color: #f9f9f9;
             padding: 4px 8px;
         }
-
         input[type="text"] {
             flex: 1;
             border: none;
@@ -172,7 +159,6 @@
             padding: 10px;
             outline: none;
         }
-
         button.send-btn {
             border: none;
             background-color: #3F8CFF;
@@ -182,20 +168,50 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
         button.send-btn:hover {
             background-color: #2DCC14;
         }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(6px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+        .thinking-dots {
+            display: inline-block;
+            width: 24px;
+        }
+        .thinking-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin: 0 2px;
+            background-color: #222;
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+        }
+        .thinking-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes blink {
+            0%,
+            80%,
+            100% {
+                opacity: 0;
+            }
+
+            40% {
+                opacity: 1;
             }
         }
     </style>
@@ -209,6 +225,7 @@
 
   gtag('config', 'G-45TSTEH491');
 </script>
+
 <body>
     <!-- BACKGROUND -->
     <div class="background-logo">
@@ -219,7 +236,8 @@
         <div style="display: flex; align-items: center; gap: 10px; width: 100%; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="overflow: hidden; border-radius: 50%; height: 50px; width: 50px;">
-                    <img src="{% static 'imgs/bot.svg' %}" alt="bot" style="object-fit: cover; width:100%; height:100%;">
+                    <img src="{% static 'imgs/bot.svg' %}" alt="bot"
+                        style="object-fit: cover; width:100%; height:100%;">
                 </div>
                 <div>
                     <p style="color: #fff; font-weight: bold;">Vision Nouvelle</p>
@@ -235,7 +253,8 @@
     <main class="messages-container" id="chat-box">
         <div class="message-bot">
             <div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div>
-            <div class="text">Bonjour 👋, je suis l’assistant Vision Nouvelle. Comment puis-je vous aider aujourd’hui ?</div>
+            <div class="text">Bonjour 👋, je suis l’assistant Vision Nouvelle. Comment puis-je vous aider aujourd’hui ?
+            </div>
         </div>
     </main>
     <!-- FOOTER / NAV -->
@@ -257,9 +276,7 @@
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
         const suggestions = document.querySelectorAll(".suggestion-btn");
-
         let history = [];
-
         function addMessage(text, sender = "user") {
             const div = document.createElement("div");
             div.className = sender === "user" ? "message-user" : "message-bot";
@@ -269,24 +286,24 @@
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
         async function sendMessage(msg) {
             if (!msg.trim()) return;
-
             addMessage(msg, "user");
             userInput.value = "";
-
             history.push({ role: "user", content: msg });
-
-            // simulation du "..." pendant la réponse
             const thinking = document.createElement("div");
             thinking.className = "message-bot";
-            thinking.innerHTML = `<div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div><div class="text">...</div>`;
+            thinking.innerHTML = `
+                <div class="bot-avatar"><img src="{% static 'imgs/bot.svg' %}" alt="bot"></div>
+                <div class="text">
+                    <div class="thinking-dots">
+                        <span></span><span></span>
+                    </div>
+                </div>`;
             chatBox.appendChild(thinking);
             chatBox.scrollTop = chatBox.scrollHeight;
-
             try {
-                
+
                 const response = await fetch("/api/chat/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -305,7 +322,7 @@
 
             } catch (e) {
                 thinking.remove();
-                addMessage("⚠️ Erreur de communication avec le serveur.", "bot");
+                addMessage("Erreur de communication avec le serveur.", "bot");
             }
         }
 
@@ -314,4 +331,5 @@
         suggestions.forEach(btn => btn.addEventListener("click", () => sendMessage(btn.textContent)));
     </script>
 </body>
+
 </html>
